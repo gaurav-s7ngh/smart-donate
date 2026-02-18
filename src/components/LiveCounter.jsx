@@ -1,56 +1,72 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-
-const TARGET_AMOUNT = 243500;
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Zap } from 'lucide-react';
 
 export default function LiveCounter() {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(14205);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
-    // Smooth counting logic
-    const duration = 2500;
-    const start = performance.now();
-    
-    const animate = (time) => {
-      const elapsed = time - start;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Ease out quart
-      const ease = 1 - Math.pow(1 - progress, 4);
-      
-      setCount(Math.floor(ease * TARGET_AMOUNT));
-      
-      if (progress < 1) requestAnimationFrame(animate);
-    };
-    
-    requestAnimationFrame(animate);
+    // Simulate live donations
+    const interval = setInterval(() => {
+      const shouldUpdate = Math.random() > 0.6; // Random chance
+      if (shouldUpdate) {
+        setCount(prev => prev + 1);
+        
+        // Show subtle toast
+        const names = ["Aarav", "Priya", "Rahul", "Ananya", "Vikram"];
+        const randomName = names[Math.floor(Math.random() * names.length)];
+        const cities = ["Mumbai", "Delhi", "Bangalore", "Pune"];
+        const randomCity = cities[Math.floor(Math.random() * cities.length)];
+        
+        setNotification(`${randomName} from ${randomCity} just donated!`);
+        
+        // Hide toast after 3s
+        setTimeout(() => setNotification(null), 3000);
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="flex justify-center pt-6 pb-2 sticky top-0 z-50 pointer-events-none">
-      <motion.div 
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="glass-pill px-5 py-2 flex items-center gap-3 pointer-events-auto ring-1 ring-white/60 relative overflow-hidden group"
-      >
-        {/* Shimmer Effect */}
-        <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent z-10" />
-
-        <div className="flex items-center gap-2">
-          <div className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
+    <>
+      {/* Fixed Counter Pill */}
+      <div className="fixed top-6 right-6 z-40">
+        <div className="bg-white/80 backdrop-blur-md border border-slate-200/50 shadow-lg rounded-full px-4 py-2 flex items-center gap-2">
+          <div className="relative">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <div className="absolute inset-0 bg-emerald-500 rounded-full animate-ping opacity-20" />
           </div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Live Donations</span>
+          <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Impact Makers</span>
+          <div className="w-px h-3 bg-slate-200 mx-1" />
+          <motion.span 
+            key={count}
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="text-sm font-extrabold text-slate-900 tabular-nums"
+          >
+            {count.toLocaleString()}
+          </motion.span>
         </div>
-        
-        <div className="h-4 w-px bg-slate-200"></div>
-        
-        <div className="font-mono text-sm font-bold text-slate-800 tabular-nums tracking-tight">
-          ₹ {count.toLocaleString('en-IN')}
-        </div>
-      </motion.div>
-    </div>
+      </div>
+
+      {/* Floating Notification Toast */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 10, x: '-50%' }}
+            className="fixed bottom-8 left-1/2 z-50 flex items-center gap-3 px-4 py-2.5 bg-slate-900 text-white rounded-full shadow-xl shadow-slate-900/20 whitespace-nowrap"
+          >
+            <div className="bg-white/10 p-1 rounded-full">
+              <Zap size={12} className="text-yellow-400" fill="currentColor" />
+            </div>
+            <span className="text-xs font-medium">{notification}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

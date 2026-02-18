@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Loader2, ArrowLeft, Shield, CreditCard } from 'lucide-react';
+import { ShieldCheck, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
+import { useTaxCalculator } from '../../hooks/useTaxCalculator';
 
 export default function PaymentSummary({ formData, onBack, onSuccess }) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const { saved } = useTaxCalculator(formData.amount);
 
-  const handlePayment = () => {
+  const handlePay = () => {
     setIsProcessing(true);
+    // Mock Payment Delay
     setTimeout(() => {
       setIsProcessing(false);
       onSuccess();
@@ -15,79 +18,75 @@ export default function PaymentSummary({ formData, onBack, onSuccess }) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex-1">
-        <div className="text-center mb-6">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Total Payable</div>
-          <div className="text-4xl font-extrabold text-slate-900 tracking-tight">
-            ₹{formData.amount.toLocaleString()}
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-slate-900">Confirm Impact</h2>
+        <p className="text-sm text-slate-500">Review your contribution details.</p>
+      </div>
+
+      <div className="space-y-4">
+        {/* Main Card */}
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase">Cause</p>
+              <p className="text-lg font-bold text-slate-900">{formData.causeTitle}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-bold text-slate-400 uppercase">Units</p>
+              <p className="text-lg font-bold text-slate-900">{formData.units}</p>
+            </div>
+          </div>
+          
+          <div className="h-px bg-slate-200 my-2" />
+          
+          <div className="flex justify-between items-center py-2">
+            <span className="text-slate-600 font-medium">Donation Amount</span>
+            <span className="text-xl font-bold text-slate-900">₹{formData.amount.toLocaleString()}</span>
           </div>
         </div>
 
-        {/* Receipt Card */}
-        <div className="bg-slate-50/50 rounded-2xl p-6 border border-slate-200/60 space-y-4 relative overflow-hidden">
-          {/* Decorative jagged line at top */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-30"></div>
-
-          <Row label="Donor" value={formData.fullName} />
-          <Row label="Email" value={formData.email} />
-          <Row label="PAN" value={formData.pan} mono />
-          
-          <div className="h-px bg-slate-200/80 my-2 border-dashed border-t border-slate-300"></div>
-          
-          <div className="flex items-center gap-2 text-[10px] text-slate-400 font-medium justify-center pt-2">
-            <Lock size={10} />
-            <span>256-bit SSL Encrypted • PCI DSS Compliant</span>
-          </div>
-        </div>
-
-        {/* Payment Method Selector (Visual Only) */}
-        <div className="mt-6">
-           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Payment Method</label>
-           <div className="flex gap-3">
-              <div className="flex-1 border-2 border-indigo-600 bg-indigo-50/20 rounded-xl p-3 flex items-center justify-center gap-2 cursor-pointer shadow-sm">
-                 <CreditCard size={16} className="text-indigo-600"/>
-                 <span className="text-sm font-bold text-indigo-900">Card</span>
-              </div>
-              <div className="flex-1 border border-slate-200 bg-white rounded-xl p-3 flex items-center justify-center gap-2 cursor-pointer opacity-60 grayscale hover:grayscale-0 transition-all">
-                 <span className="text-sm font-bold text-slate-600">UPI</span>
-              </div>
+        {/* Intelligence Breakdown */}
+        <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 flex items-center justify-between">
+           <div>
+             <div className="flex items-center gap-1.5 mb-1">
+               <ShieldCheck size={14} className="text-emerald-500" />
+               <span className="text-xs font-bold text-emerald-600 uppercase">Smart Benefit</span>
+             </div>
+             <p className="text-xs text-slate-500">Est. Tax Savings (80G)</p>
+           </div>
+           <div className="text-right">
+             <span className="block text-emerald-600 font-bold">+ ₹{saved.toLocaleString()}</span>
+             <span className="text-[10px] text-slate-400">Effective Cost: ₹{(formData.amount - saved).toLocaleString()}</span>
            </div>
         </div>
       </div>
 
-      <div className="flex gap-3 mt-6">
-        <button onClick={onBack} disabled={isProcessing} className="px-5 py-4 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl transition-colors">
+      <div className="mt-auto flex gap-3 pt-6">
+        <button
+          onClick={onBack}
+          disabled={isProcessing}
+          className="px-6 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-colors disabled:opacity-50"
+        >
           <ArrowLeft size={20} />
         </button>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handlePayment}
+        <button
+          onClick={handlePay}
           disabled={isProcessing}
-          className="flex-1 py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl font-bold text-lg shadow-xl shadow-slate-900/20 flex justify-center items-center gap-3 relative overflow-hidden"
+          className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl shadow-slate-900/20 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-80 disabled:cursor-wait"
         >
           {isProcessing ? (
             <>
-              <Loader2 className="animate-spin" size={20} />
+              <Loader2 size={20} className="animate-spin" />
               <span>Processing...</span>
             </>
           ) : (
             <>
-              <Shield size={18} className="text-emerald-400" />
-              <span>Secure Pay</span>
+              <span>Pay ₹{formData.amount.toLocaleString()}</span>
+              <ArrowRight size={18} />
             </>
           )}
-        </motion.button>
+        </button>
       </div>
-    </div>
-  );
-}
-
-function Row({ label, value, mono }) {
-  return (
-    <div className="flex justify-between items-center text-sm group">
-      <span className="text-slate-500 font-medium">{label}</span>
-      <span className={`font-bold text-slate-900 ${mono ? 'font-mono tracking-wide' : ''}`}>{value}</span>
     </div>
   );
 }

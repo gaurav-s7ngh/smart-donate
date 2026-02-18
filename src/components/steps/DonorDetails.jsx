@@ -1,118 +1,81 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ShieldCheck, AlertCircle, ArrowLeft, Lock } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { User, Mail, CreditCard, ArrowRight, ArrowLeft } from 'lucide-react';
 
 export default function DonorDetails({ formData, setFormData, onNext, onBack }) {
-  const [errors, setErrors] = useState({});
-  const [isValid, setIsValid] = useState(false);
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  // Regex patterns
-  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-
-  useEffect(() => {
-    const newErrors = {};
-    if (formData.email && !EMAIL_REGEX.test(formData.email)) newErrors.email = "Invalid email";
-    if (formData.pan && !PAN_REGEX.test(formData.pan)) newErrors.pan = "Invalid PAN";
-    setErrors(newErrors);
-    setIsValid(formData.fullName && formData.email && formData.pan && Object.keys(newErrors).length === 0);
-  }, [formData]);
-
-  const handleChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+  const isValid = formData.fullName && formData.email;
 
   return (
     <div className="h-full flex flex-col">
-      <h2 className="text-xl font-bold text-slate-800 mb-6">Your Details</h2>
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-slate-900">Your Details</h2>
+        <p className="text-sm text-slate-500">Where should we send the 80G receipt?</p>
+      </div>
 
-      <div className="space-y-5 flex-1">
-        {/* Name */}
-        <div className="group">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block ml-1">Full Name</label>
+      <div className="space-y-4">
+        {/* Name Input */}
+        <div className="relative group">
+          <User className="absolute left-4 top-3.5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" size={20} />
           <input
             type="text"
+            name="fullName"
+            placeholder="Full Name"
             value={formData.fullName}
-            onChange={(e) => handleChange('fullName', e.target.value)}
-            className="input-field"
-            placeholder="John Doe"
+            onChange={handleChange}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
           />
         </div>
 
-        {/* Email */}
-        <div className="group relative">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block ml-1">Email Address</label>
-          <div className="relative">
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              className={`input-field ${errors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-100' : ''}`}
-              placeholder="john@example.com"
-            />
-            {formData.email && !errors.email && (
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-3.5 text-emerald-500 bg-emerald-50 rounded-full p-0.5">
-                <Check size={14} strokeWidth={3} />
-              </motion.div>
-            )}
-          </div>
+        {/* Email Input */}
+        <div className="relative group">
+          <Mail className="absolute left-4 top-3.5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" size={20} />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+          />
         </div>
 
-        {/* PAN */}
-        <div className="group">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block ml-1">PAN Number</label>
-          <div className="relative">
-            <input
-              type="text"
-              value={formData.pan}
-              onChange={(e) => handleChange('pan', e.target.value.toUpperCase())}
-              maxLength={10}
-              className={`input-field uppercase tracking-widest font-mono ${errors.pan ? 'border-red-300' : ''}`}
-              placeholder="ABCDE1234F"
-            />
-             {formData.pan && !errors.pan && (
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-3.5 text-emerald-500 bg-emerald-50 rounded-full p-0.5">
-                <Check size={14} strokeWidth={3} />
-              </motion.div>
-            )}
-          </div>
-          
-          {/* Tax Badge */}
-          <AnimatePresence>
-            {formData.pan && !errors.pan && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0, marginTop: 0 }} 
-                animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
-                className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100/50 rounded-xl p-3 flex items-center gap-3 shadow-sm"
-              >
-                <div className="bg-gradient-to-br from-amber-400 to-orange-500 text-white p-1.5 rounded-lg shadow-amber-200 shadow-md">
-                  <ShieldCheck size={14} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-amber-900/80">80G Tax Exemption Eligible</p>
-                  <p className="text-[10px] text-amber-700/60 font-medium">Receipt sent automatically</p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {/* PAN Input (New for 80G Context) */}
+        <div className="relative group">
+          <CreditCard className="absolute left-4 top-3.5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" size={20} />
+          <input
+            type="text"
+            name="pan"
+            placeholder="PAN (Optional for Tax Benefit)"
+            value={formData.pan}
+            onChange={handleChange}
+            maxLength={10}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all uppercase"
+          />
+          <span className="absolute right-4 top-4 text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded">
+            80G
+          </span>
         </div>
       </div>
 
-      <div className="flex gap-3 mt-8">
-        <button 
-          onClick={onBack} 
-          className="px-5 py-4 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl transition-colors"
+      <div className="mt-auto flex gap-3 pt-6">
+        <button
+          onClick={onBack}
+          className="px-6 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-colors"
         >
           <ArrowLeft size={20} />
         </button>
-        <motion.button
-          whileHover={isValid ? { scale: 1.02 } : {}}
-          whileTap={isValid ? { scale: 0.98 } : {}}
+        <button
           onClick={onNext}
           disabled={!isValid}
-          className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl shadow-slate-900/20 disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2"
+          className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl shadow-slate-900/20 disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
-          <span>Review & Pay</span>
-          <Lock size={16} className="opacity-50" />
-        </motion.button>
+          <span>Review Contribution</span>
+          <ArrowRight size={18} />
+        </button>
       </div>
     </div>
   );

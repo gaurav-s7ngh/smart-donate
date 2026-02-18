@@ -1,123 +1,63 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Download, Share2, ArrowRight } from 'lucide-react';
+import { Check, ArrowRight, LayoutDashboard } from 'lucide-react';
+import { useTaxCalculator } from '../hooks/useTaxCalculator';
 
-// --- PHYSICS CONFETTI COMPONENT ---
-const Confetti = () => {
-  const [particles, setParticles] = useState([]);
-
-  useEffect(() => {
-    // Generate 50 particles with random physics
-    const newParticles = Array.from({ length: 50 }).map((_, i) => ({
-      id: i,
-      x: 0, // Start from center
-      y: 0, 
-      // Random velocity
-      velocityX: (Math.random() - 0.5) * 800, 
-      velocityY: -Math.random() * 800 - 400, // Explode UP
-      color: ['#6366F1', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6'][Math.floor(Math.random() * 5)],
-      rotation: Math.random() * 360,
-      scale: Math.random() * 0.5 + 0.5,
-    }));
-    setParticles(newParticles);
-  }, []);
+export default function SuccessScreen({ formData, onReset, onViewDashboard }) {
+  const { saved } = useTaxCalculator(formData.amount);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center">
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          className="absolute w-3 h-3 rounded-sm"
-          initial={{ x: 0, y: 0, opacity: 1, scale: 0 }}
-          animate={{ 
-            x: p.velocityX, 
-            y: p.velocityY + 800, // Add "Gravity" (fall down)
-            opacity: 0,
-            rotate: p.rotation + 720, // Spin wildly
-            scale: p.scale 
-          }}
-          transition={{ 
-            duration: 2.5, 
-            ease: [0.25, 0.1, 0.25, 1], // Cubic bezier for "pop" feel
-          }}
-          style={{ backgroundColor: p.color }}
-        />
-      ))}
-    </div>
-  );
-};
-
-// --- MAIN SUCCESS SCREEN ---
-export default function SuccessScreen({ formData }) {
-  return (
-    <div className="text-center py-6 relative h-full flex flex-col items-center justify-center">
-      
-      {/* 1. The Confetti Explosion */}
-      <Confetti />
-
-      {/* 2. Success Icon */}
+    <div className="h-full flex flex-col items-center justify-center text-center px-4 relative">
       <motion.div
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: "spring", stiffness: 200, damping: 15 }}
-        className="w-24 h-24 bg-gradient-to-tr from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/30 ring-4 ring-white"
+        initial={{ scale: 0 }} animate={{ scale: 1 }}
+        className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-emerald-500/40 ring-4 ring-white"
       >
-        <Check size={48} className="text-white drop-shadow-md" strokeWidth={3} />
+        <Check size={40} className="text-white" strokeWidth={4} />
       </motion.div>
 
-      {/* 3. Text & Details */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <h2 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">Donation Successful!</h2>
-        <p className="text-slate-500 mb-8 max-w-xs mx-auto">
-          Thank you, <span className="font-semibold text-slate-700">{formData.fullName}</span>. Your contribution has been verified.
-        </p>
-      </motion.div>
+      <h2 className="text-2xl font-extrabold text-slate-900 mb-1">Impact Verified</h2>
+      <p className="text-slate-500 text-sm mb-8">Your contribution is now active.</p>
 
-      {/* 4. Receipt Card */}
+      {/* Intelligence Summary Card */}
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.4 }}
-        className="bg-slate-50/80 rounded-2xl p-6 border border-slate-200/60 w-full max-w-sm mb-8 backdrop-blur-sm"
+        initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}
+        className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-8"
       >
-        <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200/60">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Amount Paid</span>
-            <span className="text-2xl font-bold text-slate-900">₹{formData.amount.toLocaleString()}</span>
-        </div>
-        <div className="flex justify-between text-sm mb-2">
-            <span className="text-slate-500">Transaction ID</span>
-            <span className="font-mono text-slate-700">TXN_{Math.random().toString(36).substr(2, 6).toUpperCase()}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-            <span className="text-slate-500">Date</span>
-            <span className="text-slate-700">{new Date().toLocaleDateString()}</span>
+        <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+          <div className="text-left">
+            <p className="text-[10px] text-slate-400 uppercase font-bold">You Funded</p>
+            <p className="text-lg font-bold text-slate-800">{formData.units} x {formData.causeTitle}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] text-slate-400 uppercase font-bold">Total</p>
+            <p className="text-lg font-bold text-slate-800">₹{formData.amount.toLocaleString()}</p>
+          </div>
+          <div className="col-span-2 h-px bg-slate-200"></div>
+          <div className="text-left">
+            <p className="text-[10px] text-emerald-600 uppercase font-bold">Est. Tax Saved</p>
+            <p className="text-sm font-bold text-emerald-600">₹{saved.toLocaleString()}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] text-indigo-600 uppercase font-bold">Effective Cost</p>
+            <p className="text-sm font-bold text-indigo-600">₹{(formData.amount - saved).toLocaleString()}</p>
+          </div>
         </div>
       </motion.div>
 
-      {/* 5. Action Buttons */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="flex gap-3 w-full max-w-sm"
-      >
-        <button className="flex-1 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center gap-2 group">
-          <Download size={18} className="text-slate-400 group-hover:text-slate-600" />
-          <span>Receipt</span>
+      <div className="w-full space-y-3">
+        <button 
+          onClick={onReset}
+          className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 hover:bg-slate-800 transition"
+        >
+          Make Another Impact <ArrowRight size={16} />
         </button>
-        <button className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2">
-          <span>Share</span>
-          <Share2 size={18} />
+        <button 
+          onClick={onViewDashboard}
+          className="w-full py-3.5 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition flex items-center justify-center gap-2"
+        >
+          <LayoutDashboard size={16} /> View Impact Dashboard
         </button>
-      </motion.div>
-
-      <p className="mt-8 text-xs text-slate-400 animate-pulse">
-        Redirecting to home in 10s...
-      </p>
+      </div>
     </div>
   );
 }

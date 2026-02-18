@@ -50,7 +50,7 @@ export default function App() {
     setShowRecModal(false);
   };
 
-  // --- RENDER: DASHBOARD VIEW ---
+// --- RENDER: DASHBOARD VIEW ---
   if (currentView === 'dashboard') {
     return (
       <AnimatePresence mode="wait">
@@ -60,7 +60,13 @@ export default function App() {
           animate={{ opacity: 1, x: 0 }} 
           exit={{ opacity: 0, x: -20 }}
         >
-          <Dashboard onBack={() => setCurrentView('donate')} />
+          {/* Pass the 'history' from useDonation hook 
+              to make the dashboard dynamic 
+          */}
+          <Dashboard 
+            onBack={() => setCurrentView('donate')} 
+            history={history} 
+          />
         </motion.div>
       </AnimatePresence>
     );

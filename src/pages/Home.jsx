@@ -14,6 +14,10 @@ import ReceiptCard from '../components/RecieptCard';
 import TaxExplanationSection from '../components/TaxExplanationSection';
 import { processPaymentWithProtection } from '../services/paymentOrchestrator';
 import { generateComplianceReceipt } from '../services/receiptGenerator';
+
+import pmnrfLogo from '../assets/pmnrf.jpeg';   // Ensure the extension matches what you downloaded
+import akshayaLogo from '../assets/akshaya.jpg';
+import sankalpLogo from '../assets/sankalp.png';
 // Data
 // Data with Real Indian NGOs & Govt Funds
 const CAUSES = [
@@ -23,9 +27,27 @@ const CAUSES = [
 ];
 
 const NGOS = [
-  { name: "PMNRF", focus: "Disaster Relief", impact: "Govt. Backed 100% Deduction", deduction: 100, logoText: "PM" },
-  { name: "Akshaya Patra", focus: "Hunger", impact: "3M+ Daily Meals", deduction: 50, logoText: "AP" },
-  { name: "SankalpTaru", focus: "Environment", impact: "5M+ Trees Planted", deduction: 50, logoText: "ST" },
+  { 
+    name: "PMNRF", 
+    focus: "Disaster Relief", 
+    impact: "Govt. Backed 100% Deduction", 
+    deduction: 100, 
+    logoImg: pmnrfLogo // <--- Use the imported variable
+  },
+  { 
+    name: "Akshaya Patra", 
+    focus: "Hunger", 
+    impact: "3M+ Daily Meals", 
+    deduction: 50, 
+    logoImg: akshayaLogo // <--- Use the imported variable
+  },
+  { 
+    name: "SankalpTaru", 
+    focus: "Environment", 
+    impact: "5M+ Trees Planted", 
+    deduction: 50, 
+    logoImg: sankalpLogo // <--- Use the imported variable
+  },
 ];
 const INITIAL_COMMENTS = [
   { name: "John D.", text: "Keep up the amazing work! For a greener tomorrow.", time: "10 mins ago" },
@@ -601,10 +623,13 @@ const { taxSaved, effectiveCost } = useTaxCalculator(formData.cart, taxRegime);
                 </div>
                 
                 {/* Logo Container */}
-                <div className="w-24 h-24 mx-auto bg-white rounded-full flex items-center justify-center shadow-md mb-6 border-4 border-[#F5F2EB] group-hover:scale-105 transition-transform duration-300 overflow-hidden">
-                  <span className="text-[#6B8060] font-black text-2xl">{ngo.logoText}</span>
-                  {/* Note: You can replace the span above with an <img src="..." /> once you have your NGO logos */}
-                </div>
+<div className="w-24 h-24 mx-auto bg-white rounded-full flex items-center justify-center shadow-md mb-6 border-4 border-[#F5F2EB] group-hover:scale-105 transition-transform duration-300 overflow-hidden p-3">
+  {ngo.logoImg ? (
+    <img src={ngo.logoImg} alt={`${ngo.name} Logo`} className="w-full h-full object-contain" />
+  ) : (
+    <span className="text-[#6B8060] font-black text-2xl">{ngo.logoText}</span>
+  )}
+</div>
                 
                 <h3 className="text-xl font-black text-[#1A1F16] mb-2">{ngo.name}</h3>
                 <p className="text-xs font-bold text-[#6B8060] uppercase tracking-wider mb-3">{ngo.focus}</p>

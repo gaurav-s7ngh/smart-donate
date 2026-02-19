@@ -4,8 +4,7 @@ import { Check, ArrowRight, LayoutDashboard, CreditCard, Smartphone } from 'luci
 import { useTaxCalculator } from '../hooks/useTaxCalculator';
 
 export default function SuccessScreen({ formData, onReset, onViewDashboard }) {
-  const { saved } = useTaxCalculator(formData.amount);
-  const cart = formData.cart || [];
+const { taxSaved } = useTaxCalculator(formData.cart, 'old');  const cart = formData.cart || [];
   
   // CHANGED: Helper to get payment method display
   const isPhonePe = formData.paymentMethod === 'phonepe';

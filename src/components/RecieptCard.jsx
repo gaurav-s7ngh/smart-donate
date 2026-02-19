@@ -5,7 +5,7 @@ import { CheckCircle2, ShieldCheck, Download, MessageSquare, Send } from 'lucide
 export default function ReceiptCard({ 
   formData, 
   txnId, 
-  receiptData, // <--- Add this
+  receiptData,
   resetDonation, 
   feedbackText, 
   setFeedbackText, 
@@ -38,10 +38,10 @@ export default function ReceiptCard({
            </p>
         </div>
 
+        {/* RECEIPT WRAPPER STARTS HERE */}
         <div id="receipt-card" className="bg-white rounded-[2rem] p-8 md:p-12 shadow-xl border border-[#6B8060]/20 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-5">
                <ShieldCheck size={200} />
-            </div>
             </div>
 
             <div className="flex justify-between items-start mb-8 border-b border-gray-100 pb-8 relative z-10">
@@ -63,7 +63,9 @@ export default function ReceiptCard({
                  <p className="text-gray-600 mb-1">{formData.email}</p>
                  <p className="text-gray-600 font-mono mt-2 bg-gray-50 inline-block px-3 py-1 rounded-md border border-gray-100">PAN: {formData.pan || 'Not Provided'}</p>
                </div>
-               </div>
+               
+               {/* Removed the extra closing div that was here */}
+               
                <div className="text-right">
                  <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-2">Grand Total</p>
                  <p className="font-black text-4xl text-[#6B8060] mb-2">₹{formData.amount?.toLocaleString()}</p>
@@ -74,6 +76,7 @@ export default function ReceiptCard({
                    Processed via {receiptData?.gateway || 'Smart Router'}
                  </div>
                </div>
+            </div>
 
             <div className="mb-10 pt-4 border-t border-gray-100 relative z-10">
               <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-3">Causes Supported</p>
@@ -118,6 +121,9 @@ export default function ReceiptCard({
                  </p>
                </div>
             </div>
+            
+        </div> 
+        {/* RECEIPT WRAPPER ENDS HERE - Now everything inside prints! */}
 
         <div className="grid grid-cols-2 gap-4 mt-8 no-print">
           <button onClick={() => window.print()} className="py-4 botanical-btn-primary rounded-xl font-bold flex items-center justify-center gap-2 text-lg shadow-xl hover:-translate-y-1 transition-all duration-300">

@@ -150,8 +150,7 @@ const { taxSaved, effectiveCost } = useTaxCalculator(formData.cart, taxRegime);
     setFeedbackText('');
     setFeedbackSubmitted(false);
     setActiveCauseId(null);
-    resetFlow();
-    setFormData({ amount: 0, cart: [], fullName: '', email: '', pan: '' });
+    resetFlow(); // <--- This already saves to history AND resets formData
   };
 
   const handleFeedbackSubmit = () => {

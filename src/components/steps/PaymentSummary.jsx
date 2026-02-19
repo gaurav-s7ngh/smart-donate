@@ -66,18 +66,32 @@ export default function PaymentSummary({ formData, setFormData, onBack, onSucces
            </div>
         </div>
 
-        {/* Intelligence Breakdown */}
-        <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-           <div>
-             <div className="flex items-center gap-1.5 mb-1">
-               <ShieldCheck size={14} className="text-emerald-600" />
-               <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Smart Benefit</span>
-             </div>
-             <p className="text-xs text-slate-500">Est. Tax Savings (80G)</p>
+        {/* Clear Math Breakdown */}
+        <div className="bg-emerald-50/50 border border-emerald-200 rounded-2xl p-4 shadow-sm">
+           <div className="flex items-center gap-1.5 mb-3">
+             <ShieldCheck size={16} className="text-emerald-600" />
+             <span className="text-sm font-bold text-emerald-800 uppercase tracking-wide">Tax Savings Breakdown</span>
            </div>
-           <div className="text-right">
-             <span className="block text-emerald-600 font-black text-lg">- ₹{taxSaved?.toLocaleString() || 0}</span>
-             <span className="text-[10px] font-bold text-slate-500">Effective Cost: ₹{effectiveCost?.toLocaleString() || formData.amount}</span>
+           
+           <div className="space-y-2 mb-3">
+             <div className="flex justify-between items-center text-sm text-slate-600">
+               <span>You Donate Today</span>
+               <span className="font-semibold text-slate-900">₹{formData.amount?.toLocaleString() || 0}</span>
+             </div>
+             <div className="flex justify-between items-center text-sm text-emerald-700">
+               <span>Estimated Tax Saved <span className="text-[10px] font-bold uppercase tracking-wider">(Sec 80G)</span></span>
+               <span className="font-bold">- ₹{taxSaved?.toLocaleString() || 0}</span>
+             </div>
+             <div className="flex justify-between items-center pt-2 border-t border-emerald-200/60">
+               <span className="font-bold text-slate-900 text-sm">Actual Cost to You</span>
+               <span className="font-black text-slate-900 text-base">₹{effectiveCost?.toLocaleString() || formData.amount}</span>
+             </div>
+           </div>
+
+           <div className="bg-emerald-100/50 px-3 py-2 rounded-xl border border-emerald-100">
+             <p className="text-[11px] text-emerald-800 font-medium leading-relaxed text-center">
+               You pay ₹{formData.amount?.toLocaleString() || 0} today, but save ₹{taxSaved?.toLocaleString() || 0} when you file your taxes.
+             </p>
            </div>
         </div>
 

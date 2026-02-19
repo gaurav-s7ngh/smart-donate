@@ -41,7 +41,8 @@ export default function Home() {
   
   const { formData, setFormData, resetFlow } = useDonation();
   const [taxRegime, setTaxRegime] = useState('old'); 
-const { taxtaxSaved, effectiveCost } = useTaxCalculator(formData.cart, taxRegime);
+// ✅ Correct
+const { taxSaved, effectiveCost } = useTaxCalculator(formData.cart, taxRegime);
   const [count, setCount] = useState(14205432);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -494,7 +495,7 @@ const { taxtaxSaved, effectiveCost } = useTaxCalculator(formData.cart, taxRegime
                   </div>
                   <div className="text-right">
                     <span className="text-5xl font-black text-[#1A1F16] tracking-tighter drop-shadow-sm">
-₹{effectiveCost.toLocaleString()}                    </span>
+₹{effectiveCost?.toLocaleString() || formData.amount}                  </span>
                   </div>
                 </div>
               </div>

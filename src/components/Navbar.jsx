@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { History } from 'lucide-react';
-// Ensure logo.jpeg is placed in your src/assets folder
 import logo from '../assets/logo.jpeg'; 
 
 export default function Navbar() {

@@ -12,6 +12,8 @@ import Leaderboard from '../components/Leaderboard';
 import CommunityWall from '../components/CommunityWall';
 import ReceiptCard from '../components/RecieptCard';
 import TaxExplanationSection from '../components/TaxExplanationSection';
+import { processPaymentWithProtection } from '../services/paymentOrchestrator';
+import { generateComplianceReceipt } from '../services/receiptGenerator';
 // Data
 // Data with Real Indian NGOs & Govt Funds
 const CAUSES = [
@@ -49,6 +51,9 @@ const { taxSaved, effectiveCost } = useTaxCalculator(formData.cart, taxRegime);
   const [isSuccess, setIsSuccess] = useState(false);
   const [txnId, setTxnId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
+
+  const [paymentLog, setPaymentLog] = useState('');
+  const [receiptData, setReceiptData] = useState(null);
   
   // Multi-cart specific states
   const [activeCauseId, setActiveCauseId] = useState(null);
@@ -110,15 +115,32 @@ const { taxSaved, effectiveCost } = useTaxCalculator(formData.cart, taxRegime);
     }
   };
 
-  const handlePay = () => {
+ const handlePay = async () => {
     setIsProcessing(true);
-    const generatedTxnId = `TXN-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    setTimeout(() => {
-      setTxnId(generatedTxnId);
+    setPaymentLog('Securing connection...');
+    
+    try {
+      // 1. Run the Orchestrator
+      const txResult = await processPaymentWithProtection(
+        formData.amount, 
+        formData.cart, 
+        (message) => setPaymentLog(message) // Live update the UI
+      );
+
+      // 2. Generate Compliance Data
+      const complianceData = generateComplianceReceipt(txResult);
+      
+      // 3. Save to state and complete
+      setTxnId(txResult.transactionId);
+      setReceiptData({ ...txResult, ...complianceData });
+      
       setIsProcessing(false);
       setIsSuccess(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 2500);
+    } catch (error) {
+      setPaymentLog('Transaction failed. Please try again.');
+      setIsProcessing(false);
+    }
   };
 
   const resetDonation = () => {
@@ -157,6 +179,7 @@ const { taxSaved, effectiveCost } = useTaxCalculator(formData.cart, taxRegime);
       <ReceiptCard 
         formData={formData}
         txnId={txnId}
+        receiptData={receiptData} // <--- Pass the new data
         resetDonation={resetDonation}
         feedbackText={feedbackText}
         setFeedbackText={setFeedbackText}
@@ -522,12 +545,31 @@ const { taxSaved, effectiveCost } = useTaxCalculator(formData.cart, taxRegime);
                 </div>
               </div>
 
+              {/* NEW: Revenue Protection Badge */}
+              <div className="flex items-center justify-between mb-4 px-2">
+                 <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-md">
+                   <ShieldCheck size={14} /> Revenue Protection Active
+                 </span>
+                 <span className="text-[10px] text-[#4A5E40] font-bold uppercase tracking-wider">Smart Routing Engine</span>
+              </div>
+
               <button 
                 onClick={handlePay} 
                 disabled={!isFormValid || isProcessing}
-                className="w-full py-6 botanical-btn-primary rounded-2xl font-black text-xl disabled:opacity-50 disabled:hover:scale-100 disabled:shadow-none flex items-center justify-center gap-3 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#6B8060]/30 transition-all duration-300"
+                className="w-full py-6 botanical-btn-primary rounded-2xl font-black text-xl disabled:opacity-90 disabled:cursor-not-allowed flex flex-col items-center justify-center gap-1 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#6B8060]/30 transition-all duration-300 relative overflow-hidden"
               >
-                {isProcessing ? "Processing..." : <><ShieldCheck size={28} /> Confirm ₹{formData.amount.toLocaleString()}</>}
+                {isProcessing ? (
+                  <div className="flex flex-col items-center z-10">
+                    <span className="text-sm font-bold text-[#EAE3D2] animate-pulse mb-1">{paymentLog}</span>
+                    <div className="w-48 h-1 bg-[#4A5E40] rounded-full overflow-hidden">
+                       <div className="w-1/2 h-full bg-[#EAE3D2] animate-[slide_1s_ease-in-out_infinite]" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 z-10">
+                    <ShieldCheck size={28} /> Confirm ₹{formData.amount?.toLocaleString()}
+                  </div>
+                )}
               </button>
               
               <p className="text-center text-xs text-[#4A5E40] mt-6 font-medium flex items-center justify-center gap-2">

@@ -5,6 +5,7 @@ import { CheckCircle2, ShieldCheck, Download, MessageSquare, Send } from 'lucide
 export default function ReceiptCard({ 
   formData, 
   txnId, 
+  receiptData, // <--- Add this
   resetDonation, 
   feedbackText, 
   setFeedbackText, 
@@ -41,6 +42,7 @@ export default function ReceiptCard({
             <div className="absolute top-0 right-0 p-8 opacity-5">
                <ShieldCheck size={200} />
             </div>
+            </div>
 
             <div className="flex justify-between items-start mb-8 border-b border-gray-100 pb-8 relative z-10">
                <div>
@@ -61,13 +63,17 @@ export default function ReceiptCard({
                  <p className="text-gray-600 mb-1">{formData.email}</p>
                  <p className="text-gray-600 font-mono mt-2 bg-gray-50 inline-block px-3 py-1 rounded-md border border-gray-100">PAN: {formData.pan || 'Not Provided'}</p>
                </div>
+               </div>
                <div className="text-right">
                  <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-2">Grand Total</p>
                  <p className="font-black text-4xl text-[#6B8060] mb-2">₹{formData.amount?.toLocaleString()}</p>
-                 <p className="text-gray-600 font-medium">{date}</p>
-                 <p className="text-gray-400 font-mono text-xs mt-2">Txn ID: {txnId}</p>
+                 <p className="text-gray-600 font-medium text-xs mb-1">{receiptData?.timestamp || date}</p>
+                 <p className="text-gray-400 font-mono text-[10px] mt-1">TXN: {receiptData?.transactionId}</p>
+                 <p className="text-gray-400 font-mono text-[10px]">RCPT: {receiptData?.receiptId}</p>
+                 <div className="inline-block mt-2 px-2 py-1 bg-slate-100 text-slate-500 text-[9px] font-bold rounded border border-slate-200 uppercase tracking-wider">
+                   Processed via {receiptData?.gateway || 'Smart Router'}
+                 </div>
                </div>
-            </div>
 
             <div className="mb-10 pt-4 border-t border-gray-100 relative z-10">
               <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-3">Causes Supported</p>
@@ -103,10 +109,15 @@ export default function ReceiptCard({
               </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-gray-100 text-center relative z-10 flex flex-col items-center justify-center">
-               <p className="text-xs text-gray-400 max-w-sm">This is a computer-generated receipt and does not require a physical signature.</p>
+           <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center relative z-10">
+               <p className="text-[10px] text-gray-400 max-w-xs">This is a computer-generated receipt. Automated 80G compliance applied where eligible.</p>
+               <div className="text-right">
+                 <p className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest mb-1">{receiptData?.complianceStatus}</p>
+                 <p className="text-[10px] font-mono text-gray-400 border border-gray-200 px-2 py-1 rounded bg-gray-50">
+                   Sig: {receiptData?.digitalSignature}
+                 </p>
+               </div>
             </div>
-        </div>
 
         <div className="grid grid-cols-2 gap-4 mt-8 no-print">
           <button onClick={() => window.print()} className="py-4 botanical-btn-primary rounded-xl font-bold flex items-center justify-center gap-2 text-lg shadow-xl hover:-translate-y-1 transition-all duration-300">

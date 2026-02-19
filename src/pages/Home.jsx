@@ -13,17 +13,16 @@ import CommunityWall from '../components/CommunityWall';
 import ReceiptCard from '../components/RecieptCard';
 // Data
 const CAUSES = [
-  { id: 1, title: "Plant Trees", desc: "Restore nature's balance", category: "Environment", unitCost: 100, icon: Leaf },
-  { id: 2, title: "Provide Meals", desc: "Nourish communities", category: "Hunger", unitCost: 50, icon: Heart },
-  { id: 3, title: "Fund Education", desc: "Empower minds", category: "Education", unitCost: 1000, icon: Globe },
+  { id: 1, title: "Plant Trees", desc: "SankalpTaru Foundation", category: "Environment", unitCost: 100, icon: Leaf, deductionRate: 50 },
+  { id: 2, title: "Provide Meals", desc: "Akshaya Patra", category: "Hunger", unitCost: 50, icon: Heart, deductionRate: 50 },
+  { id: 3, title: "Fund Education", desc: "National Children's Fund", category: "Education", unitCost: 1000, icon: Globe, deductionRate: 100 },
 ];
 
 const NGOS = [
-  { name: "Green Earth Foundation", focus: "Environment", impact: "2M+ Trees Planted" },
-  { name: "Akshaya Patra", focus: "Hunger", impact: "3M+ Daily Meals" },
-  { name: "Teach For India", focus: "Education", impact: "100K+ Students" },
+  { name: "SankalpTaru", focus: "Environment", impact: "5M+ Trees Planted", deduction: 50, logoText: "ST" },
+  { name: "Akshaya Patra", focus: "Hunger", impact: "3M+ Daily Meals", deduction: 50, logoText: "AP" },
+  { name: "National Children's Fund", focus: "Education & Relief", impact: "Govt. Backed 100% Impact", deduction: 100, logoText: "NCF" },
 ];
-
 const INITIAL_COMMENTS = [
   { name: "John D.", text: "Keep up the amazing work! For a greener tomorrow.", time: "10 mins ago" },
   { name: "Sarah W.", text: "Happy to help the kids get back to school.", time: "1 hour ago" },
@@ -85,7 +84,14 @@ const { taxSaved, effectiveCost } = useTaxCalculator(formData.cart, taxRegime);
         if (index !== -1) {
           newCart[index] = { ...newCart[index], quantity: qty, total: cause.unitCost * qty };
         } else {
-          newCart.push({ id: cause.id, title: cause.title, unitCost: cause.unitCost, quantity: qty, total: cause.unitCost * qty });
+          newCart.push({ 
+            id: cause.id, 
+            title: cause.title, 
+            unitCost: cause.unitCost, 
+            quantity: qty, 
+            total: cause.unitCost * qty,
+            deductionRate: cause.deductionRate // 👈 THIS IS THE CRUCIAL NEW LINE
+          });
         }
       }
       
@@ -280,10 +286,16 @@ const { taxSaved, effectiveCost } = useTaxCalculator(formData.cart, taxRegime);
                         </div>
                       )}
                       
-                      <Icon className={`mb-4 ${isSelected ? `text-[#6B8060]` : 'text-[#4A5E40]/60'}`} size={36} />
+                      <div className="flex justify-between items-start mb-4">
+                        <Icon className={`${isSelected ? 'text-[#6B8060]' : 'text-[#4A5E40]/60'}`} size={36} />
+                        {/* 🌟 Dynamic Deduction Badge */}
+                        <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-md ${cause.deductionRate === 100 ? 'bg-amber-400 text-amber-900' : 'bg-[#6B8060]/10 text-[#6B8060]'}`}>
+                          {cause.deductionRate}% 80G
+                        </span>
+                      </div>
                       <h3 className="text-xl font-bold text-[#1A1F16] mb-1">{cause.title}</h3>
                       <p className="text-[#4A5E40] text-xs font-medium mb-3">{cause.desc}</p>
-                      <div className={`text-sm font-black ${isSelected ? `text-[#4A5E40]` : 'text-[#1A1F16]'}`}>₹{cause.unitCost.toLocaleString()} / unit</div>
+                      <div className={`text-sm font-black ${isSelected ? 'text-[#4A5E40]' : 'text-[#1A1F16]'}`}>₹{cause.unitCost.toLocaleString()} / unit</div>
                     </motion.div>
                   );
                 })}
@@ -536,13 +548,22 @@ const { taxSaved, effectiveCost } = useTaxCalculator(formData.cart, taxRegime);
           
           <div className="grid md:grid-cols-3 gap-8 text-center">
             {NGOS.map((ngo, idx) => (
-              <div key={idx} className="botanical-card p-8">
-                <div className="w-20 h-20 mx-auto bg-[#EAE3D2] rounded-2xl flex items-center justify-center shadow-inner mb-6 text-[#6B8060]">
-                  <Building2 size={40} />
+              <div key={idx} className="botanical-card p-8 relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300">
+                
+                {/* 🌟 80G Tax Ribbon */}
+                <div className={`absolute top-0 right-0 px-4 py-1.5 rounded-bl-2xl font-black text-[10px] tracking-widest uppercase shadow-sm z-10 ${ngo.deduction === 100 ? 'bg-amber-400 text-amber-900' : 'bg-[#6B8060] text-[#F5F2EB]'}`}>
+                  {ngo.deduction}% Tax Exempt
                 </div>
+                
+                {/* Logo Container */}
+                <div className="w-24 h-24 mx-auto bg-white rounded-full flex items-center justify-center shadow-md mb-6 border-4 border-[#F5F2EB] group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                  <span className="text-[#6B8060] font-black text-2xl">{ngo.logoText}</span>
+                  {/* Note: You can replace the span above with an <img src="..." /> once you have your NGO logos */}
+                </div>
+                
                 <h3 className="text-xl font-black text-[#1A1F16] mb-2">{ngo.name}</h3>
-                <p className="text-sm font-bold text-[#6B8060] uppercase tracking-wider mb-2">{ngo.focus}</p>
-                <p className="text-[#4A5E40]">{ngo.impact}</p>
+                <p className="text-xs font-bold text-[#6B8060] uppercase tracking-wider mb-3">{ngo.focus}</p>
+                <p className="text-[#4A5E40] text-sm font-medium">{ngo.impact}</p>
               </div>
             ))}
           </div>

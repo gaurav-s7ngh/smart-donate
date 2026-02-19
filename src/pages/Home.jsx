@@ -3,11 +3,13 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { 
   ShieldCheck, Heart, CreditCard, Smartphone, CheckCircle2, 
   Leaf, Globe, Calculator, ArrowRight, ArrowUp, Sparkles, 
-  Building2, Trophy, Medal, MessageSquare, TrendingDown, Wallet, Download, Send, Trash2 
+  Building2, MessageSquare, TrendingDown, Wallet, Download, Send, Trash2 
 } from 'lucide-react';
 import { useDonation } from '../hooks/useDonation';
 import { useTaxCalculator } from '../hooks/useTaxCalculator';
 import Navbar from '../components/Navbar';
+import Leaderboard from '../components/Leaderboard';
+import CommunityWall from '../components/CommunityWall';
 
 // Data
 const CAUSES = [
@@ -22,21 +24,16 @@ const NGOS = [
   { name: "Teach For India", focus: "Education", impact: "100K+ Students" },
 ];
 
-const LEADERBOARD = [
-  { rank: 1, name: "Aarav Sharma", amount: 1500000, cause: "Plant Trees" },
-  { rank: 2, name: "Priya Patel", amount: 850000, cause: "Fund Education" },
-  { rank: 3, name: "TechCorp India", amount: 500000, cause: "Provide Meals" },
-  { rank: 4, name: "Rohan Gupta", amount: 250000, cause: "Plant Trees" },
-  { rank: 5, name: "Anonymous", amount: 100000, cause: "Fund Education" },
-  { rank: 6, name: "Neha Singh", amount: 75000, cause: "Provide Meals" },
-];
-
 const INITIAL_COMMENTS = [
   { name: "John D.", text: "Keep up the amazing work! For a greener tomorrow.", time: "10 mins ago" },
   { name: "Sarah W.", text: "Happy to help the kids get back to school.", time: "1 hour ago" },
   { name: "Anonymous", text: "Small steps lead to big changes.", time: "3 hours ago" },
   { name: "Amit K.", text: "Dedicated to my grandfather.", time: "5 hours ago" },
 ];
+
+// Validation Regex
+const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Home() {
   const { scrollYProgress } = useScroll();
@@ -73,7 +70,6 @@ export default function Home() {
     };
   }, []);
 
-  // 🌟 MULTI-CART LOGIC ENHANCEMENT
   const handleAmountSelect = (causeId, qty) => {
     const cause = CAUSES.find(c => c.id === causeId);
     if (!cause) return;
@@ -83,11 +79,9 @@ export default function Home() {
       const index = newCart.findIndex(item => item.id === causeId);
       
       if (qty <= 0) {
-        // Remove item if quantity is 0 or less
         if (index !== -1) newCart.splice(index, 1);
         if (activeCauseId === causeId) setActiveCauseId(null);
       } else {
-        // Add or Update item in cart
         if (index !== -1) {
           newCart[index] = { ...newCart[index], quantity: qty, total: cause.unitCost * qty };
         } else {
@@ -95,7 +89,6 @@ export default function Home() {
         }
       }
       
-      // Recalculate grand total
       const newAmount = newCart.reduce((sum, item) => sum + item.total, 0);
       return { ...prev, cart: newCart, amount: newAmount };
     });
@@ -140,9 +133,14 @@ export default function Home() {
 
   const scrollToDonate = () => document.getElementById('donate-section')?.scrollIntoView({ behavior: 'smooth' });
 
-  const isFormValid = formData.amount > 0 && formData.fullName && formData.email;
+  // Robust Form Validation
+  const isPanValid = !formData.pan || PAN_REGEX.test(formData.pan);
+  const isFormValid = 
+    formData.amount > 0 && 
+    formData.fullName?.trim().length > 2 && 
+    formData.email && EMAIL_REGEX.test(formData.email) &&
+    isPanValid;
   
-  // State variables for the currently active UI panel
   const activeCause = CAUSES.find(c => c.id === activeCauseId);
   const activeCartItem = formData.cart?.find(c => c.id === activeCauseId);
 
@@ -155,7 +153,7 @@ export default function Home() {
           @media print {
             body * { visibility: hidden; }
             #receipt-card, #receipt-card * { visibility: visible; }
-            #receipt-card { position: absolute; left: 0; top: 0; width: 100%; max-width: 100%; padding: 40px; margin: 0; background: white; border: none; box-shadow: none; border-radius: 0; }
+            #receipt-card { position: absolute; left: 0; top: 0; width: 100%; max-width: 100%; padding: 40px; margin: 0; background: white; border: none; box-shadow: none; border-radius: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .no-print { display: none !important; }
           }
         `}</style>
@@ -173,7 +171,6 @@ export default function Home() {
              </p>
           </div>
 
-          {/* 🧾 THE OFFICIAL RECEIPT CARD */}
           <div id="receipt-card" className="bg-white rounded-[2rem] p-8 md:p-12 shadow-xl border border-[#6B8060]/20 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-5">
                  <ShieldCheck size={200} />
@@ -206,7 +203,6 @@ export default function Home() {
                  </div>
               </div>
 
-              {/* Enhanced Summary for Multiple Causes */}
               <div className="mb-10 pt-4 border-t border-gray-100 relative z-10">
                 <p className="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-3">Causes Supported</p>
                 <div className="space-y-2">
@@ -247,10 +243,10 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 gap-4 mt-8 no-print">
-            <button onClick={() => window.print()} className="py-4 botanical-btn-primary rounded-xl font-bold flex items-center justify-center gap-2 text-lg shadow-xl">
+            <button onClick={() => window.print()} className="py-4 botanical-btn-primary rounded-xl font-bold flex items-center justify-center gap-2 text-lg shadow-xl hover:-translate-y-1 transition-all duration-300">
               <Download size={20} /> Download Receipt
             </button>
-            <button onClick={resetDonation} className="py-4 bg-white border border-[#6B8060]/30 text-[#1A1F16] rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors shadow-sm">
+            <button onClick={resetDonation} className="py-4 bg-white border border-[#6B8060]/30 text-[#1A1F16] rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 hover:-translate-y-1 transition-all duration-300 shadow-sm">
               Return Home
             </button>
           </div>
@@ -275,7 +271,7 @@ export default function Home() {
                   <button 
                     onClick={handleFeedbackSubmit}
                     disabled={!feedbackText.trim()}
-                    className="bg-[#1A1F16] text-[#F5F2EB] px-6 py-3 rounded-xl font-bold text-sm hover:bg-[#2c3625] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md"
+                    className="bg-[#1A1F16] text-[#F5F2EB] px-6 py-3 rounded-xl font-bold text-sm hover:bg-[#2c3625] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md hover:-translate-y-1"
                   >
                     Post <Send size={16} />
                   </button>
@@ -394,7 +390,6 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* CAUSES GRID */}
               <div className="grid sm:grid-cols-3 gap-4">
                 {CAUSES.map(cause => {
                   const cartItem = formData.cart?.find(c => c.id === cause.id);
@@ -408,14 +403,13 @@ export default function Home() {
                       key={cause.id} 
                       onClick={() => { 
                         setActiveCauseId(cause.id); 
-                        if (!isSelected) handleAmountSelect(cause.id, 1); 
+                        if (!isSelected) handleAmountSelect(cause.id, 10); // Anchoring to 10
                         setIsCustomMode(false); 
                       }} 
                       className={`cursor-pointer p-6 rounded-[2rem] transition-all duration-300 border-2 relative ${
                         isSelected ? `bg-[#F5F2EB] border-[#6B8060] shadow-lg shadow-[#6B8060]/10` : 'bg-[#F5F2EB]/60 border-transparent hover:border-[#6B8060]/30 hover:bg-[#F5F2EB]'
                       } ${isActivePanel && isSelected ? 'ring-2 ring-offset-2 ring-[#6B8060]/50' : ''}`}
                     >
-                      {/* Quantity Badge if selected */}
                       {isSelected && (
                         <div className="absolute top-4 right-4 bg-[#6B8060] text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-full shadow-sm">
                           {cartItem.quantity} units
@@ -431,7 +425,6 @@ export default function Home() {
                 })}
               </div>
 
-              {/* QUANTITY CONTROL PANEL FOR ACTIVE CAUSE */}
               <AnimatePresence>
                 {activeCause && activeCartItem && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="botanical-card p-8 relative overflow-hidden">
@@ -446,18 +439,28 @@ export default function Home() {
                       How many units of <span className="text-[#4A5E40]">{activeCause.title}</span>?
                     </p>
                     
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-3 mt-4">
                       {[1, 5, 10, 50, 100].map(qty => (
-                        <button key={qty} onClick={() => { setIsCustomMode(false); handleAmountSelect(activeCause.id, qty); }} 
-                          className={`px-6 py-4 rounded-2xl font-black text-lg transition-all ${!isCustomMode && activeCartItem.quantity === qty ? 'bg-[#6B8060] text-[#F5F2EB] shadow-md' : 'bg-[#EAE3D2] text-[#4A5E40] hover:bg-[#dfd7c3] border border-[#6B8060]/20'}`}>
-                          {qty}
-                        </button>
+                        <div key={qty} className="relative">
+                          {qty === 10 && (
+                            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-900 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-sm z-10 whitespace-nowrap">
+                              Most Popular
+                            </span>
+                          )}
+                          <button 
+                            onClick={() => { setIsCustomMode(false); handleAmountSelect(activeCause.id, qty); }} 
+                            className={`px-6 py-4 rounded-2xl font-black text-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${!isCustomMode && activeCartItem.quantity === qty ? 'bg-[#6B8060] text-[#F5F2EB] shadow-md ring-2 ring-[#6B8060] ring-offset-2 ring-offset-[#F5F2EB]' : 'bg-[#EAE3D2] text-[#4A5E40] hover:bg-[#dfd7c3] border border-[#6B8060]/20'}`}>
+                            {qty}
+                          </button>
+                        </div>
                       ))}
                       
                       {!isCustomMode ? (
-                        <button onClick={() => { setIsCustomMode(true); setCustomQty(activeCartItem.quantity); }} className="px-6 py-4 rounded-2xl font-black text-lg bg-[#EAE3D2] text-[#4A5E40] hover:bg-[#dfd7c3] border border-[#6B8060]/20 transition-all">
-                          Custom
-                        </button>
+                        <div className="relative">
+                          <button onClick={() => { setIsCustomMode(true); setCustomQty(activeCartItem.quantity); }} className="px-6 py-4 rounded-2xl font-black text-lg bg-[#EAE3D2] text-[#4A5E40] hover:bg-[#dfd7c3] border border-[#6B8060]/20 transition-all duration-300 hover:-translate-y-1">
+                            Custom
+                          </button>
+                        </div>
                       ) : (
                         <div className="relative flex items-center">
                           <input type="number" min="1" autoFocus value={customQty} onChange={handleCustomQtyChange} placeholder="Enter qty" 
@@ -501,12 +504,33 @@ export default function Home() {
                   </div>
                   <div>
                     <label className="text-xs font-bold text-[#4A5E40] uppercase tracking-wider mb-2 block">Email Address</label>
-                    <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="botanical-input" placeholder="jane@example.com" />
+                    <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className={`botanical-input ${formData.email && !EMAIL_REGEX.test(formData.email) ? 'border-red-400 focus:ring-red-400/20' : ''}`} placeholder="jane@example.com" />
+                    {formData.email && !EMAIL_REGEX.test(formData.email) && <p className="text-red-500 text-[10px] font-bold mt-1">Please enter a valid email.</p>}
                   </div>
+                  
                   <div className="md:col-span-2">
-                    <label className="text-xs font-bold text-[#4A5E40] uppercase tracking-wider mb-2 block">PAN Number (For Auto-Receipt)</label>
-                    <input type="text" value={formData.pan} onChange={(e) => setFormData({...formData, pan: e.target.value.toUpperCase()})} maxLength={10} className="botanical-input uppercase" placeholder="ABCDE1234F" />
+                    <label className="text-xs font-bold text-[#4A5E40] uppercase tracking-wider mb-2 flex items-center gap-2">
+                      PAN Number (Optional)
+                      <span className="group relative cursor-help">
+                        <ShieldCheck size={14} className="text-[#6B8060]" />
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-[#1A1F16] text-[#F5F2EB] text-[10px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 text-center font-normal tracking-normal shadow-xl">
+                          Required securely by the Govt. of India solely to generate your official 80G tax exemption certificate.
+                        </span>
+                      </span>
+                    </label>
+                    <input 
+                      type="text" 
+                      value={formData.pan} 
+                      onChange={(e) => setFormData({...formData, pan: e.target.value.toUpperCase()})} 
+                      maxLength={10} 
+                      className={`botanical-input uppercase w-full px-4 py-3 rounded-xl border ${formData.pan && !PAN_REGEX.test(formData.pan) ? 'border-red-400 focus:ring-red-400/20' : 'border-[#6B8060]/30 focus:ring-[#6B8060]/20'} bg-[#F5F2EB] focus:outline-none focus:ring-2 transition-all`} 
+                      placeholder="ABCDE1234F" 
+                    />
+                    {formData.pan && !PAN_REGEX.test(formData.pan) && (
+                      <p className="text-red-500 text-[10px] font-bold mt-1">Please enter a valid 10-digit Indian PAN.</p>
+                    )}
                   </div>
+
                 </div>
               </div>
             </div>
@@ -525,8 +549,6 @@ export default function Home() {
               </h3>
               
               <div className="space-y-6 mb-10">
-                
-                {/* 🌟 LIST OF MULTIPLE CART ITEMS */}
                 {formData.cart?.length > 0 ? (
                   <div className="space-y-3 mb-6">
                     {formData.cart.map(item => (
@@ -626,7 +648,7 @@ export default function Home() {
               <button 
                 onClick={handlePay} 
                 disabled={!isFormValid || isProcessing}
-                className="w-full py-6 botanical-btn-primary rounded-2xl font-black text-xl disabled:opacity-50 disabled:hover:scale-100 disabled:shadow-none flex items-center justify-center gap-3"
+                className="w-full py-6 botanical-btn-primary rounded-2xl font-black text-xl disabled:opacity-50 disabled:hover:scale-100 disabled:shadow-none flex items-center justify-center gap-3 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#6B8060]/30 transition-all duration-300"
               >
                 {isProcessing ? "Processing..." : <><ShieldCheck size={28} /> Confirm ₹{formData.amount.toLocaleString()}</>}
               </button>
@@ -639,42 +661,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Leaderboard Section */}
-      <section className="bg-[#F5F2EB] py-24 border-t border-[#6B8060]/20">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-[#1A1F16] mb-4 flex items-center justify-center gap-3">
-              <Trophy className="text-[#6B8060]" size={40} /> Top Cultivators
-            </h2>
-            <p className="text-[#4A5E40] text-lg max-w-2xl mx-auto">The individuals and organizations making the largest impact.</p>
-          </div>
-          
-          <div className="bg-[#EAE3D2] rounded-[2rem] border border-[#6B8060]/20 overflow-hidden shadow-sm">
-            {LEADERBOARD.map((donor, idx) => {
-              const isTop3 = donor.rank <= 3;
-              return (
-                <div key={idx} className={`flex items-center justify-between p-6 ${idx !== LEADERBOARD.length - 1 ? 'border-b border-[#6B8060]/10' : ''} hover:bg-[#F5F2EB]/50 transition-colors`}>
-                  <div className="flex items-center gap-6">
-                    <div className="w-12 h-12 flex items-center justify-center font-black text-xl">
-                      {donor.rank === 1 ? <Medal size={36} className="text-yellow-600" /> : 
-                       donor.rank === 2 ? <Medal size={32} className="text-slate-400" /> : 
-                       donor.rank === 3 ? <Medal size={28} className="text-amber-700" /> : 
-                       <span className="text-[#4A5E40] opacity-50">#{donor.rank}</span>}
-                    </div>
-                    <div>
-                      <h3 className={`font-black text-lg ${isTop3 ? 'text-[#1A1F16]' : 'text-[#4A5E40]'}`}>{donor.name}</h3>
-                      <p className="text-[#6B8060] text-sm font-bold uppercase">{donor.cause}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-black ${isTop3 ? 'text-2xl text-[#1A1F16]' : 'text-xl text-[#4A5E40]'}`}>₹{donor.amount.toLocaleString()}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      <Leaderboard />
 
       {/* Partner NGOs Section */}
       <section className="py-24 border-t border-[#6B8060]/20">
@@ -699,42 +686,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🌟 STATEFUL COMMUNITY COMMENTS WALL */}
-      <section className="bg-[#1A1F16] py-24 text-[#F5F2EB]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between mb-16 border-b border-[#6B8060]/30 pb-8">
-            <div>
-              <h2 className="text-4xl font-black flex items-center gap-3 mb-2">
-                <MessageSquare className="text-[#6B8060]" size={36} /> Community Wall
-              </h2>
-              <p className="text-[#A3B19B] text-lg">Words of encouragement from our recent donors.</p>
-            </div>
-            <button onClick={scrollToDonate} className="mt-6 md:mt-0 px-6 py-3 bg-[#6B8060] hover:bg-[#A3B19B] text-[#1A1F16] font-bold rounded-xl transition-colors">
-              Add Your Voice
-            </button>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <AnimatePresence>
-              {communityComments.slice(0, 4).map((comment, idx) => (
-                <motion.div 
-                  key={idx + comment.text} 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  layout
-                  className="bg-[#EAE3D2]/10 p-6 rounded-[2rem] border border-[#6B8060]/30 flex flex-col h-full"
-                >
-                  <p className="text-[#F5F2EB] text-lg mb-6 italic leading-relaxed flex-grow">"{comment.text}"</p>
-                  <div className="flex justify-between items-center mt-auto border-t border-[#6B8060]/20 pt-4">
-                    <span className="font-bold text-[#6B8060]">{comment.name}</span>
-                    <span className="text-[#A3B19B] text-xs">{comment.time}</span>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
-      </section>
+      <CommunityWall comments={communityComments} onDonateClick={scrollToDonate} />
 
       <AnimatePresence>
         {showScrollTop && (
